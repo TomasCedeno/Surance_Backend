@@ -19,6 +19,8 @@ class GoalAPIView(views.APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request):
+        """Crea una meta"""
+
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
@@ -26,17 +28,39 @@ class GoalAPIView(views.APIView):
         return Response(serializer.validated_data, status=status.HTTP_201_CREATED)
 
     def patch(self, request, *args, **kwargs):
-        goal = get_object_or_404(Goal, id=self.kwargs.get('pk'))
-        serializer = self.serializer_class(goal, data=request.data, partial=True) # partial=True para actualizar objeto parcialemnte
-        
-        if serializer.is_valid(raise_exception=True):
-            serializer.save()
-            return Response(serializer.validated_data, status=status.HTTP_200_OK)
+        """Abona dinero a una meta, recibiendo el ID de la meta
+        \n- moneyToPay: Dienro a abonar"""
 
-        return Response({'message': 'Bad Request'}, status=status.HTTP_400_BAD_REQUEST)
+        goal = get_object_or_404(Goal, id=self.kwargs.get('pk'))
+
+        try:
+            savedMoney = goal.savedMoney
+            moneyToPay = request.data['moneyToPay']
+
+            if goal.isCompleted:
+                return Response({'message': 'This goal is already completed'}, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+            elif (savedMoney + moneyToPay) > goal.goalMoney:
+                return Response({'message':'moneyToPay must be less than the remaining money to complete the goal'}, status=status.HTTP_400_BAD_REQUEST)
+                
+            savedMoney += moneyToPay
+        
+        except KeyError:
+            return Response({'message': 'Missing moneyToPay param'}, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+        except:
+            return Response({'message':'Bad request'}, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = self.serializer_class(goal, data={'savedMoney':savedMoney}, partial=True) # partial=True para actualizar objeto parcialemnte
+        
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.validated_data, status=status.HTTP_200_OK)
 
 
     def delete(self, request, *args, **kwargs):
+        """Elimina una meta"""
+
         goal = get_object_or_404(Goal, id=self.kwargs.get('pk'))
         goal.delete()
-        return Response({'message': 'Meta Eliminada'} ,status=status.HTTP_204_NO_CONTENT)
+        return Response({'message': 'Goal Deleted'} ,status=status.HTTP_204_NO_CONTENT)

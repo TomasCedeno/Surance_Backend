@@ -8,3 +8,7 @@ class Goal(models.Model):
     description = models.TextField()
     goalMoney = models.IntegerField()
     savedMoney = models.IntegerField(default=0)
+
+    @property
+    def isCompleted(self):
+        return self.savedMoney == self.goalMoney
