@@ -14,7 +14,7 @@ class GoalAPIView(views.APIView):
 
     #PROVISIONAL: EN REALIDAD EL GET DEBE DEVOLVER TODOS LAS METAS POR USUARIO
     def get(self, request):
-        goals = Goal.objects.all()
+        goals = Goal.objects.all().order_by('id')
         serializer = self.serializer_class(goals, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
