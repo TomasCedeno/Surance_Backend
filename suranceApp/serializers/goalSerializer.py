@@ -1,4 +1,4 @@
-from suranceApp.models.goal import Goal
+from suranceApp.models import Goal
 from rest_framework import serializers
 
 class GoalSerializer(serializers.ModelSerializer):

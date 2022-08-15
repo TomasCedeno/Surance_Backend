@@ -20,4 +20,6 @@ from suranceApp import views
 urlpatterns = [
     path('goals/', views.GoalAPIView.as_view()),
     path('goals/<int:pk>',views.GoalAPIView.as_view()),
+    path('incomes/', views.IncomeAPIView.as_view()),
+    path('incomes/monthly/', views.MonthlyIncomeView.as_view()),
 ]
