@@ -18,6 +18,9 @@ from django.urls import path
 from suranceApp import views
 
 urlpatterns = [
+    path('user/', views.UserAPIView.as_view()),
+    path('user/<int:pk>', views.UserAPIView.as_view()),
+    path('login/', views.LoginAPIView.as_view()),
     path('goals/', views.GoalAPIView.as_view()),
     path('goals/<int:pk>',views.GoalAPIView.as_view()),
     path('incomes/', views.IncomeAPIView.as_view()),
