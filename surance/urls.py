@@ -22,4 +22,6 @@ urlpatterns = [
     path('goals/<int:pk>',views.GoalAPIView.as_view()),
     path('incomes/', views.IncomeAPIView.as_view()),
     path('incomes/monthly/', views.MonthlyIncomeView.as_view()),
+    path('expenses/', views.ExpenseAPIView.as_view()),
+    path('expenses/monthly/', views.MonthlyExpenseView.as_view()),
 ]
