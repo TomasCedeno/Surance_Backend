@@ -2,6 +2,7 @@ from rest_framework import status, views
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.hashers import make_password
+from django.http import Http404
 
 from suranceApp.serializers.userSerializer import UserSerializer
 from suranceApp.models import User
@@ -9,8 +10,8 @@ from suranceApp.models import User
 class UserAPIView(views.APIView):
 
     def get(self, request, *args, **kwargs):
-        details = get_object_or_404(User, id=self.kwargs.get('pk'))
-        serializer = UserSerializer(details)
+        user = get_object_or_404(User, id=self.kwargs.get('pk'))
+        serializer = UserSerializer(user)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request):
@@ -19,6 +20,13 @@ class UserAPIView(views.APIView):
         serializer.save()
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def patch(self, request,*args, **kwargs):
+        user = get_object_or_404(User, id=self.kwargs.get('pk'))
+        serializer = UserSerializer(user, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.validated_data, status=status.HTTP_200_OK)
 
 
 class LoginAPIView(views.APIView):
@@ -40,6 +48,9 @@ class LoginAPIView(views.APIView):
 
         except KeyError:
             return Response({'message': 'Missing some param'}, status=status.HTTP_406_NOT_ACCEPTABLE)
+
+        except Http404:
+            return Response({'message': 'No user with given userName was found'}, status=status.HTTP_406_NOT_ACCEPTABLE)
 
         except:
             return Response({'message':'Bad request'}, status=status.HTTP_400_BAD_REQUEST)
