@@ -50,7 +50,7 @@ class LoginAPIView(views.APIView):
             return Response({'message': 'Missing some param'}, status=status.HTTP_406_NOT_ACCEPTABLE)
 
         except Http404:
-            return Response({'message': 'No user with given userName was found'}, status=status.HTTP_406_NOT_ACCEPTABLE)
+            return Response({'message': 'No user with given userName was found'}, status=status.HTTP_404_NOT_FOUND)
 
         except:
             return Response({'message':'Bad request'}, status=status.HTTP_400_BAD_REQUEST)
