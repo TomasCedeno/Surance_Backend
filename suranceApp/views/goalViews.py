@@ -6,15 +6,12 @@ from suranceApp.models.goal import Goal
 from suranceApp.serializers.goalSerializer import GoalSerializer
 
 
-#TODO: Crear vista para obtener Metas por el Id del usuario al que pertenecen
-
 class GoalAPIView(views.APIView):
 
     serializer_class = GoalSerializer
 
-    #PROVISIONAL: EN REALIDAD EL GET DEBE DEVOLVER TODOS LAS METAS POR USUARIO
-    def get(self, request):
-        goals = Goal.objects.all().order_by('id')
+    def get(self, request, *args, **kwargs):
+        goals = Goal.objects.filter(user=self.kwargs.get('pk')).order_by('id')
         serializer = self.serializer_class(goals, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 

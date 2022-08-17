@@ -24,7 +24,9 @@ urlpatterns = [
     path('goals/', views.GoalAPIView.as_view()),
     path('goals/<int:pk>',views.GoalAPIView.as_view()),
     path('incomes/', views.IncomeAPIView.as_view()),
-    path('incomes/monthly/', views.MonthlyIncomeView.as_view()),
+    path('incomes/<int:pk>', views.IncomeAPIView.as_view()),
+    path('incomes/monthly/<int:pk>', views.MonthlyIncomeView.as_view()),
     path('expenses/', views.ExpenseAPIView.as_view()),
-    path('expenses/monthly/', views.MonthlyExpenseView.as_view()),
+    path('expenses/<int:pk>', views.ExpenseAPIView.as_view()),
+    path('expenses/monthly/<int:pk>', views.MonthlyExpenseView.as_view()),
 ]

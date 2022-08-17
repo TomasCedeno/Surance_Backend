@@ -1,9 +1,9 @@
 from django.db import models
-
-#TODO: Importar la clase del modelo Usuario y agregar la relación entre Usuario y Meta
+from .user import User
 
 class Goal(models.Model):
     id = models.AutoField(primary_key=True)
+    user = models.IntegerField()
     name = models.TextField()
     description = models.TextField()
     goalMoney = models.IntegerField()

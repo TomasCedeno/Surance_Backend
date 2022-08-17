@@ -4,23 +4,27 @@ from django.db import models
 from django.db.models import Sum, Func
 from django.shortcuts import get_object_or_404
 
-from suranceApp.models.expense import Expense
-from suranceApp.serializers.expenseSerializer import ExpenseSerializer
+from suranceApp.models.expense import Expense, User
+from suranceApp.serializers import ExpenseSerializer, UserSerializer
 
-# TODO: Crear vista para obtener los ingresos por el Id del usuario al que pertenecen
 
 class ExpenseAPIView(views.APIView):
 
     serializer_class = ExpenseSerializer
 
-    # PROVISIONAL: DEBERIA DEVOLVER LOS EGRESOS POR USUARIO
-    def get(self, request):
-        expenses = Expense.objects.all()
+    def get(self, request, *args, **kwargs):
+        expenses = Expense.objects.filter(user=self.kwargs.get('pk')).order_by('id')
         serializer = self.serializer_class(expenses, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request):
         """Crea Egreso"""
+
+        user = get_object_or_404(User, id=request.data['user'])
+        balance = user.balance - request.data['value']
+        userSerializer = UserSerializer(user, data={'balance':balance}, partial=True)
+        userSerializer.is_valid(raise_exception=True)
+        userSerializer.save()
 
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -28,9 +32,16 @@ class ExpenseAPIView(views.APIView):
 
         return Response(serializer.validated_data, status=status.HTTP_201_CREATED)
 
-    def delete(self, request, *args, **kwargs):
+    def delete(self, request):
 
-        expense = get_object_or_404(Expense, id=self.kwargs.get('pk'))
+        user = get_object_or_404(User, id=request.data['user'])
+        expense = get_object_or_404(Expense, id=request.data['id'])
+
+        balance = user.balance + expense.value
+        userSerializer = UserSerializer(user, data={'balance':balance}, partial=True)
+        userSerializer.is_valid(raise_exception=True)
+        userSerializer.save()
+        
         expense.delete()
         return Response({'message': 'Expense Deleted'}, status=status.HTTP_204_NO_CONTENT)
 
@@ -52,17 +63,14 @@ class ExtractYear(Func):
 class MonthlyExpenseView(views.APIView):
     serializer_class = ExpenseSerializer
 
-    """
-    TODO: Hacer que el calculo del total de ingresos sea solamente partir de los egresos de un usuario
-        y no a partir de todos los ingresos.
-    """
-
-    def get(self, request):
+    def get(self, request, *args, **kwargs):
         """Retorna el total de ingresos por cada mes"""
-        expensesByMonth = (Expense.objects.annotate(month=ExtractMonth('date'), year=ExtractYear('date'))
-                           .values('month', 'year')
-                           .annotate(total=Sum('value'))
-                           .order_by('-year', '-month'))
+        expensesByMonth = (Expense.objects.filter(user=self.kwargs.get('pk'))
+            .annotate(month=ExtractMonth('date'), year=ExtractYear('date'))
+            .values('month', 'year')
+            .annotate(total=Sum('value'))
+            .order_by('-year', '-month')
+        )
         return Response(expensesByMonth, status=status.HTTP_200_OK)
 
     
